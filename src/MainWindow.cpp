@@ -61,6 +61,7 @@
 #include "LoadFilesStatusDialog.h"
 #include "SettingsDialog.h"
 #include "PdfAssembler.h"
+#include "PdfExportDialog.h"
 #include "AbstractRelinker.h"
 #include "RelinkingDialog.h"
 #include "OutOfMemoryHandler.h"
@@ -245,6 +246,14 @@ MainWindow::MainWindow()
         actionSaveProjectAs, SIGNAL(triggered(bool)),
         this, SLOT(saveProjectAsTriggered())
     );
+#ifdef ENABLE_PDF_EXPORT
+    connect(
+        actionExportPdf, SIGNAL(triggered(bool)),
+        this, SLOT(exportToPdf())
+    );
+#else
+    actionExportPdf->setVisible(false);
+#endif
     connect(
         actionCloseProject, SIGNAL(triggered(bool)),
         this, SLOT(closeProject())
@@ -1398,21 +1407,7 @@ MainWindow::filterResult(BackgroundTaskPtr const& task, FilterResultPtr const& r
 #ifdef ENABLE_PDF_EXPORT
             if (m_curFilter >= m_ptrStages->outputFilterIdx())
             {
-                PageSequence const ordered_pages(m_ptrPages->toPageSequence(PAGE_VIEW));
-                QString pdf_path(
-                    QDir(m_outFileNameGen.outDir()).absoluteFilePath(QString::fromLatin1("output.pdf"))
-                );
-                if (ordered_pages.numPages() > 0)
-                {
-                    QFileInfo const source_file(ordered_pages.pageAt(0).imageId().filePath());
-                    if (source_file.suffix().compare(QString::fromLatin1("pdf"), Qt::CaseInsensitive) == 0)
-                    {
-                        pdf_path = QDir(source_file.absolutePath()).absoluteFilePath(
-                            source_file.completeBaseName() + QString::fromLatin1("-done.pdf")
-                        );
-                    }
-                }
-                PdfAssembler::exportMultipage(ordered_pages, m_outFileNameGen, pdf_path);
+                exportToPdf();
             }
 #endif
             stopBatchProcessing();
@@ -1719,6 +1714,61 @@ MainWindow::openSettingsDialog()
     dialog->show();
 }
 
+#ifdef ENABLE_PDF_EXPORT
+void
+MainWindow::exportToPdf()
+{
+    if (!isProjectLoaded())
+    {
+        return;
+    }
+
+    PageSequence const ordered_pages(m_ptrPages->toPageSequence(PAGE_VIEW));
+    QString const default_path(
+        PdfAssembler::defaultOutputPath(ordered_pages, m_outFileNameGen)
+    );
+
+    PdfExportDialog dialog(default_path, this);
+    if (dialog.exec() != QDialog::Accepted)
+    {
+        return;
+    }
+
+    QString error_msg;
+    bool const ok = PdfAssembler::exportMultipage(
+        ordered_pages,
+        m_outFileNameGen,
+        dialog.outputPath(),
+        dialog.options(),
+        &error_msg
+    );
+
+    if (ok)
+    {
+        QMessageBox::information(
+            this,
+            tr("Export to PDF"),
+            tr("PDF exported successfully:\n%1").arg(dialog.outputPath())
+        );
+    }
+    else
+    {
+        QMessageBox::warning(
+            this,
+            tr("Export to PDF"),
+            error_msg.isEmpty()
+                ? tr("PDF export failed.")
+                : error_msg
+        );
+    }
+}
+#else
+void
+MainWindow::exportToPdf()
+{
+}
+#endif
+
 void
 MainWindow::showAboutDialog()
 {
@@ -1834,6 +1884,9 @@ MainWindow::updateProjectActions()
     actionSaveProject->setEnabled(loaded);
     actionSaveProjectAs->setEnabled(loaded);
     actionRelinking->setEnabled(loaded);
+#ifdef ENABLE_PDF_EXPORT
+    actionExportPdf->setEnabled(loaded);
+#endif
 }
 
 bool

@@ -201,6 +201,8 @@ private slots:
 
     void openSettingsDialog();
 
+    void exportToPdf();
+
     void showAboutDialog();
 
     void handleOutOfMemorySituation();

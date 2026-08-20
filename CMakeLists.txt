@@ -525,6 +525,7 @@ IF(QT_DEFAULT_MAJOR_VERSION EQUAL 5)
     SET(QtGui_LIBRARIES "${Qt5Gui_LIBRARIES}")
     SET(QtCore_LIBRARIES "${Qt5Core_LIBRARIES}")
     SET(QtXml_LIBRARIES "${Qt5Xml_LIBRARIES}")
+    SET(QtNetwork_LIBRARIES "Qt5::Network")
     SET(QtOpenGL_LIBRARIES "${Qt5OpenGL_LIBRARIES}")
     SET(QtPdf_LIBRARIES "")
     SET(QtCore_DIR "${Qt5Core_DIR}")
@@ -533,6 +534,7 @@ ELSE()
     SET(QtGui_LIBRARIES "${Qt6Gui_LIBRARIES}")
     SET(QtCore_LIBRARIES "${Qt6Core_LIBRARIES}")
     SET(QtXml_LIBRARIES "${Qt6Xml_LIBRARIES}")
+    SET(QtNetwork_LIBRARIES "Qt6::Network")
     SET(QtOpenGL_LIBRARIES "${Qt6OpenGL_LIBRARIES}")
     IF(ENABLE_PDF_INPUT)
         SET(QtPdf_LIBRARIES "Qt6::Pdf")
@@ -547,6 +549,7 @@ ENDIF()
         qt_libs
         ${QtWidgets_LIBRARIES} ${QtGui_LIBRARIES}
         ${QtCore_LIBRARIES} ${QtXml_LIBRARIES}
+        ${QtNetwork_LIBRARIES}
     )
     IF(ENABLE_OPENGL)
         LIST(APPEND qt_libs ${QtOpenGL_LIBRARIES})

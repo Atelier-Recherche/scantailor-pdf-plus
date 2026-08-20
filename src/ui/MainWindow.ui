@@ -83,6 +83,8 @@
     <addaction name="actionSaveProject"/>
     <addaction name="actionSaveProjectAs"/>
     <addaction name="separator"/>
+    <addaction name="actionExportPdf"/>
+    <addaction name="separator"/>
     <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionQuit"/>
@@ -303,6 +305,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionExportPdf">
+   <property name="text">
+    <string>Export to &amp;PDF...</string>
+   </property>
+   <property name="statusTip">
+    <string>Assemble output pages into a PDF file</string>
    </property>
   </action>
   <action name="actionNextPage">

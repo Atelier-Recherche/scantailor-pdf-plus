@@ -300,20 +300,15 @@ ConsoleBatch::process()
     if (endFilterIdx >= m_ptrStages->outputFilterIdx())
     {
         PageSequence const ordered_pages(m_ptrPages->toPageSequence(PAGE_VIEW));
-        QString pdf_path(
-            QDir(m_outFileNameGen.outDir()).absoluteFilePath(QString::fromLatin1("output.pdf"))
+        QString const pdf_path(
+            PdfAssembler::defaultOutputPath(ordered_pages, m_outFileNameGen)
         );
-        if (ordered_pages.numPages() > 0)
-        {
-            QFileInfo const source_file(ordered_pages.pageAt(0).imageId().filePath());
-            if (source_file.suffix().compare(QString::fromLatin1("pdf"), Qt::CaseInsensitive) == 0)
-            {
-                pdf_path = QDir(source_file.absolutePath()).absoluteFilePath(
-                    source_file.completeBaseName() + QString::fromLatin1("-done.pdf")
-                );
-            }
-        }
-        PdfAssembler::exportMultipage(ordered_pages, m_outFileNameGen, pdf_path);
+        PdfAssembler::exportMultipage(
+            ordered_pages,
+            m_outFileNameGen,
+            pdf_path,
+            PdfExportOptions::fromSettings()
+        );
     }
 #endif
 }

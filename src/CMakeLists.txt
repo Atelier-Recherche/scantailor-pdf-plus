@@ -134,6 +134,7 @@ SET(
     RelinkingListView.cpp RelinkingListView.h
     RelinkingDialog.cpp RelinkingDialog.h
     SettingsDialog.cpp SettingsDialog.h
+    PdfExportDialog.cpp PdfExportDialog.h
     LoadFilesStatusDialog.cpp LoadFilesStatusDialog.h
     ProjectCreationContext.cpp ProjectCreationContext.h
     ProjectOpeningContext.cpp ProjectOpeningContext.h
