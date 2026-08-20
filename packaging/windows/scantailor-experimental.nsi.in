@@ -7,6 +7,9 @@
 !define PRODUCT_FAMILY_LOWERCASE "@ST_FAMILY_LOWER@"
 !define FULL_ARCH "@ST_FULLARCH@"
 
+!addincludedir "@NSIS_EXTRA_INCLUDE_DIR@"
+!addplugindir "@NSIS_EXTRA_PLUGIN_DIR@"
+
 !include "@REGISTER_EXTENSION_NSH@"
 !include "x64.nsh"
 !include "MUI2.nsh"
