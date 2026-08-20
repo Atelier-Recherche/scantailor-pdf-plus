@@ -83,6 +83,9 @@ SET(
     fastimage.c fastimage.h
     FastImageMetadataLoader.cpp FastImageMetadataLoader.h
     ImageLoader.cpp ImageLoader.h
+    PdfReader.cpp PdfReader.h
+    PdfMetadataLoader.cpp PdfMetadataLoader.h
+    PdfAssembler.cpp PdfAssembler.h
     ErrorWidget.cpp ErrorWidget.h
     OrthogonalRotation.cpp OrthogonalRotation.h
     WorkerThreadPool.cpp WorkerThreadPool.h
@@ -188,6 +191,10 @@ ELSE()
     ELSE()
         TARGET_LINK_LIBRARIES(stcore Qt6::Widgets Qt6::Xml ${MAYBE_QT_OPENGL_MODULE})
     ENDIF()
+ENDIF()
+
+IF(QT_DEFAULT_MAJOR_VERSION EQUAL 6 AND ENABLE_PDF_INPUT)
+    TARGET_LINK_LIBRARIES(stcore Qt6::Pdf)
 ENDIF()
 
 ADD_DEPENDENCIES(stcore toplevel_ui_sources)

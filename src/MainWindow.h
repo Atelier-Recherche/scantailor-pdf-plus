@@ -188,6 +188,8 @@ private slots:
     void saveProjectAsTriggered();
 
     void newProject();
+    
+    void newProjectFromPdf();
 
     void newProjectCreated(ProjectCreationContext* context);
 

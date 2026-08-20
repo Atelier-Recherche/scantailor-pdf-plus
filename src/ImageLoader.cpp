@@ -18,6 +18,8 @@
 
 #include "ImageLoader.h"
 #include "TiffReader.h"
+#include "PdfReader.h"
+#include "config.h"
 #include "ImageId.h"
 #include <QImage>
 #include <QString>
@@ -44,6 +46,16 @@ ImageLoader::load(QString const& file_path, int const page_num)
 QImage
 ImageLoader::load(QIODevice& io_dev, int const page_num)
 {
+#ifdef ENABLE_PDF_INPUT
+    if (QFile* const file = dynamic_cast<QFile*>(&io_dev))
+    {
+        if (PdfReader::canRead(file->fileName()))
+        {
+            return PdfReader::readImage(file->fileName(), page_num);
+        }
+    }
+#endif
+
     if (TiffReader::canRead(io_dev))
     {
         return TiffReader::readImage(io_dev, page_num);

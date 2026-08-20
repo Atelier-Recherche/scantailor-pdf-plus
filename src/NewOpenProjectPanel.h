@@ -31,6 +31,8 @@ public:
     NewOpenProjectPanel(QWidget* parent = 0);
 signals:
     void newProject();
+    
+    void newProjectFromPdf();
 
     void openProject();
 

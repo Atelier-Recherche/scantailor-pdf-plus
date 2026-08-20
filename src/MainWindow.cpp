@@ -32,6 +32,7 @@
 #include "FileNameDisambiguator.h"
 #include "OutputFileNameGenerator.h"
 #include "ImageInfo.h"
+#include "ImageMetadata.h"
 #include "PageInfo.h"
 #include "ImageId.h"
 #include "Utils.h"
@@ -59,6 +60,7 @@
 #include "OrthogonalRotation.h"
 #include "LoadFilesStatusDialog.h"
 #include "SettingsDialog.h"
+#include "PdfAssembler.h"
 #include "AbstractRelinker.h"
 #include "RelinkingDialog.h"
 #include "OutOfMemoryHandler.h"
@@ -438,6 +440,11 @@ MainWindow::showNewOpenProjectPanel()
     connect(
         nop, SIGNAL(newProject()),
         this, SLOT(newProject()),
+        Qt::QueuedConnection
+    );
+    connect(
+        nop, SIGNAL(newProjectFromPdf()),
+        this, SLOT(newProjectFromPdf()),
         Qt::QueuedConnection
     );
     connect(
@@ -1388,6 +1395,26 @@ MainWindow::filterResult(BackgroundTaskPtr const& task, FilterResultPtr const& r
     {
         if (m_ptrBatchQueue->allProcessed())
         {
+#ifdef ENABLE_PDF_EXPORT
+            if (m_curFilter >= m_ptrStages->outputFilterIdx())
+            {
+                PageSequence const ordered_pages(m_ptrPages->toPageSequence(PAGE_VIEW));
+                QString pdf_path(
+                    QDir(m_outFileNameGen.outDir()).absoluteFilePath(QString::fromLatin1("output.pdf"))
+                );
+                if (ordered_pages.numPages() > 0)
+                {
+                    QFileInfo const source_file(ordered_pages.pageAt(0).imageId().filePath());
+                    if (source_file.suffix().compare(QString::fromLatin1("pdf"), Qt::CaseInsensitive) == 0)
+                    {
+                        pdf_path = QDir(source_file.absolutePath()).absoluteFilePath(
+                            source_file.completeBaseName() + QString::fromLatin1("-done.pdf")
+                        );
+                    }
+                }
+                PdfAssembler::exportMultipage(ordered_pages, m_outFileNameGen, pdf_path);
+            }
+#endif
             stopBatchProcessing();
 
             QApplication::alert(this); // Flash the taskbar entry.
@@ -1507,6 +1534,71 @@ MainWindow::newProject()
         context, SIGNAL(done(ProjectCreationContext*)),
         this, SLOT(newProjectCreated(ProjectCreationContext*))
     );
+}
+
+void
+MainWindow::newProjectFromPdf()
+{
+    if (!closeProjectInteractive())
+    {
+        return;
+    }
+
+    QSettings settings;
+    QString initial_dir(settings.value("project/lastDir").toString());
+    if (initial_dir.isEmpty() || !QDir(initial_dir).exists())
+    {
+        initial_dir = QDir::homePath();
+    }
+
+    QString const pdf_path(
+        QFileDialog::getOpenFileName(
+            this, tr("Select PDF"), initial_dir, tr("PDF files (*.pdf)")
+        )
+    );
+    if (pdf_path.isEmpty())
+    {
+        return;
+    }
+
+    QFileInfo const pdf_info(pdf_path);
+    std::vector<ImageMetadata> per_page_metadata;
+    ImageMetadataLoader::Status const status = ImageMetadataLoader::load(
+        pdf_path, [&] (ImageMetadata const& metadata)
+        {
+            per_page_metadata.push_back(metadata);
+        }
+    );
+    if (status != ImageMetadataLoader::LOADED || per_page_metadata.empty())
+    {
+        QMessageBox::warning(
+            this, tr("Error"),
+            tr("Unable to load PDF metadata. Please check this file.")
+        );
+        return;
+    }
+
+    QString const out_dir(
+        QDir(pdf_info.absolutePath()).absoluteFilePath(pdf_info.completeBaseName() + "-work")
+    );
+    if (!QDir().mkpath(out_dir))
+    {
+        QMessageBox::warning(
+            this, tr("Error"),
+            tr("Unable to create the working directory next to the PDF.")
+        );
+        return;
+    }
+
+    std::vector<ImageFileInfo> files;
+    files.push_back(ImageFileInfo(pdf_info, per_page_metadata));
+
+    IntrusivePtr<ProjectPages> pages(
+        new ProjectPages(files, ProjectPages::AUTO_PAGES, Qt::LeftToRight)
+    );
+    switchToNewProject(pages, out_dir);
+
+    settings.setValue("project/lastDir", pdf_info.absolutePath());
 }
 
 void
@@ -2056,7 +2148,7 @@ MainWindow::showInsertFileDialog(BeforeOrAfter before_or_after, ImageId const& e
     );
     dialog->setFileMode(QFileDialog::ExistingFiles);
     dialog->setProxyModel(new ProxyModel(*m_ptrPages));
-    dialog->setNameFilter(tr("Images not in project (%1)").arg("*.png *.tiff *.tif *.jpeg *.jpg"));
+    dialog->setNameFilter(tr("Images not in project (%1)").arg("*.png *.tiff *.tif *.jpeg *.jpg *.pdf"));
     // XXX: Adding individual pages from a multi-page TIFF where
     // some of the pages are already in project is not supported right now.
 

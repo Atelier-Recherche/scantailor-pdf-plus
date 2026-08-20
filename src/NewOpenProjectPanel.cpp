@@ -70,6 +70,10 @@ NewOpenProjectPanel::NewOpenProjectPanel(QWidget* parent)
         this, SIGNAL(newProject())
     );
     connect(
+        newProjectPdfButton, SIGNAL(clicked(bool)),
+        this, SIGNAL(newProjectFromPdf())
+    );
+    connect(
         openProjectButton, SIGNAL(clicked(bool)),
         this, SIGNAL(openProject())
     );

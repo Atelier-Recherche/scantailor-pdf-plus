@@ -9,5 +9,7 @@
 
 #cmakedefine ENABLE_OPENGL
 #cmakedefine ENABLE_OPENCL
+#cmakedefine ENABLE_PDF_INPUT
+#cmakedefine ENABLE_PDF_EXPORT
 
 #endif

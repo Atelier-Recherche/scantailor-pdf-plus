@@ -23,6 +23,7 @@
 #include "TiffMetadataLoader.h"
 //#include "JpegMetadataLoader.h"
 #include "FastImageMetadataLoader.h"
+#include "PdfMetadataLoader.h"
 #include "foundation/MultipleTargetsSupport.h"
 #include <boost/range/adaptor/reversed.hpp>
 #include <QMetaType>
@@ -138,6 +139,9 @@ int main(int argc, char** argv)
     TiffMetadataLoader::registerMyself();
     //JpegMetadataLoader::registerMyself();
     FastImageMetadataLoader::registerMyself();
+#ifdef ENABLE_PDF_INPUT
+    PdfMetadataLoader::registerMyself();
+#endif
 
     MainWindow* main_wnd = new MainWindow();
     main_wnd->setAttribute(Qt::WA_DeleteOnClose);
