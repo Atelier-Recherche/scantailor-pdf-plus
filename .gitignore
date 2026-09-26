@@ -24,3 +24,9 @@ scantailor-experimental
 scantailor-experimental-cli
 scantailor-experimental-cli.exe
 scantailor-experimental.exe
+
+# Packaged Windows releases (publish via GitHub Releases, not git)
+scantailor-pdf-plus-*-windows-x64.zip
+scantailor-pdf-plus-*-windows-x64-setup.exe
+scantailor-*-windows-x64.zip
+scantailor-*-windows-x64-setup.exe
